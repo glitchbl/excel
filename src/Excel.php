@@ -11,15 +11,15 @@ class Excel
     private $spreadsheet;
     private $sheet;
 
-    private $fichier;
+    private $file;
 
-    public function __construct($fichier)
+    public function __construct($file)
     {
-        $this->fichier = $fichier;
+        $this->file = $file;
         if ($this->isNew()) {
             $this->spreadsheet = new Spreadsheet();
         } else {
-            $this->spreadsheet = IOFactory::load($this->fichier);
+            $this->spreadsheet = IOFactory::load($this->file);
         }
 
         $this->sheet = $this->spreadsheet->getActiveSheet();
@@ -27,36 +27,28 @@ class Excel
 
     public function isNew()
     {
-        return !is_file($this->fichier);
+        return !is_file($this->file);
     }
 
-    public function save($fichier = null)
+    public function save($file = null)
     {
         $writer = new Xlsx($this->spreadsheet);
-        if (!$fichier)
-            $writer->save($this->fichier);
+        if (!$file)
+            $writer->save($this->file);
         else
-            $writer->save($fichier);   
+            $writer->save($file);   
     }
 
     public function add(array $row)
     {
-        $write_columns = function($sheet, $columns) {
-            foreach ($columns as $col_index => $column) {
-                $sheet->setCellValueByColumnAndRow($col_index + 1, 1, $column);
-                $sheet->getStyleByColumnAndRow($col_index + 1, 1)->getFont()->setBold(true);
-                $sheet->getColumnDimensionByColumn($col_index + 1)->setWidth(25);
-            }
-        };
+        $columns = [];
 
         if ($this->sheet->getHighestRow() === 1) {
             $columns = array_keys($row);
-            $write_columns($this->sheet, $columns);
+            $this->writeColumns($columns);
         } else {
             $first_row = $this->sheet->getRowIterator()->current();
-            $first_row_cells = $first_row->getCellIterator();
-            $columns = [];
-            foreach ($first_row_cells as $cell) {
+            foreach ($first_row->getCellIterator() as $cell) {
                 $columns[] = $cell->getValue();
             }
         }
@@ -65,8 +57,7 @@ class Excel
 
         if (count($new_columns)) {
             $columns = array_merge($columns, $new_columns);
-
-            $write_columns($this->sheet, $columns);
+            $this->writeColumns($columns);
         }
 
         $row_index = $this->sheet->getHighestRow() + 1;
@@ -85,8 +76,10 @@ class Excel
 
     public function getBytes()
     {
+        ob_start();
         $writer = new Xlsx($this->spreadsheet);
         $writer->save('php://output');
+        return ob_get_clean();
     }
 
     public function toArray($assoc = true)
@@ -119,5 +112,13 @@ class Excel
         }
 
         return $array;
+    }
+
+    private function writeColumns($columns) {
+        foreach ($columns as $col_index => $column) {
+            $this->sheet->setCellValueByColumnAndRow($col_index + 1, 1, $column);
+            $this->sheet->getStyleByColumnAndRow($col_index + 1, 1)->getFont()->setBold(true);
+            $this->sheet->getColumnDimensionByColumn($col_index + 1)->setWidth(25);
+        }
     }
 }

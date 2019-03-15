@@ -1,3 +1,5 @@
-# Glitchbl/Excel
+# Excel
 
-# composer require glitchbl/excel
+```
+composer require glitchbl/excel
+```
