@@ -1,0 +1,13 @@
+{
+    "name": "glitchbl/excel",
+    "description": "Easily create and convert excel from/to associative array",
+    "type": "library",
+    "require": {
+        "phpoffice/phpspreadsheet": "^1.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "Glitchbl\\": "src/"
+        }
+    }
+}
