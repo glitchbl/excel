@@ -5,40 +5,95 @@ namespace Glitchbl;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use Exception;
 
 class Excel
 {
+    /**
+     * @var \PhpOffice\PhpSpreadsheet\Spreadsheet
+     */
     private $spreadsheet;
+
+    /**
+     * @var \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet
+     */
     private $sheet;
 
+    /**
+     * @var string
+     */
     private $file;
 
-    public function __construct($file)
+    /**
+     * @param string|null $file
+     * @return void
+     */
+    public function __construct($file = null)
     {
         $this->file = $file;
-        if ($this->isNew()) {
-            $this->spreadsheet = new Spreadsheet();
-        } else {
-            $this->spreadsheet = IOFactory::load($this->file);
-        }
+        $this->make();
+    }
 
+    /**
+     * @param array $columns
+     * @param array $rows
+     * @return \Glitchbl\Excel
+     */
+    static public function create($columns, $rows)
+    {
+        $excel = new self;
+        $excel->writeColumns($columns);
+        $excel->addRows($rows);
+        return $excel;
+    }
+
+    /**
+     * @param array $columns
+     * @return void
+     */
+    private function writeColumns($columns) {
+        foreach ($columns as $col_index => $column) {
+            $this->sheet->setCellValueByColumnAndRow($col_index + 1, 1, $column);
+            $this->sheet->getStyleByColumnAndRow($col_index + 1, 1)->getFont()->setBold(true);
+            $this->sheet->getColumnDimensionByColumn($col_index + 1)->setWidth(25);
+        }
+    }
+
+    /**
+     * @return void
+     */
+    protected function make() {
+        if ($this->file) {
+            if (!is_file($this->file)) {
+                throw new Exception("Le fichier {$this->file} n'existe pas");
+            }
+            $this->spreadsheet = IOFactory::load($this->file);
+        } else {
+            $this->spreadsheet = new Spreadsheet;
+        }
         $this->sheet = $this->spreadsheet->getActiveSheet();
     }
 
-    public function isNew()
-    {
-        return !is_file($this->file);
-    }
-
+    /**
+     * @param string|null $file
+     * @return void
+     */
     public function save($file = null)
     {
         $writer = new Xlsx($this->spreadsheet);
-        if (!$file)
-            $writer->save($this->file);
-        else
+        if ($file) {
             $writer->save($file);   
+        } elseif ($this->file) {
+            $writer->save($this->file);
+        } else {
+            throw new Exception('Veuillez spécifier un nom de fichier');
+        }
     }
 
+    /**
+     * @param array $row
+     * @return void
+     */
     public function add(array $row)
     {
         $columns = [];
@@ -74,6 +129,29 @@ class Excel
         }
     }
 
+    /**
+     * @param array $rows
+     * @return void
+     */
+    public function addRows(array $rows)
+    {
+        $row_index = $this->sheet->getHighestRow() + 1;
+
+        foreach ($rows as $row) {
+            foreach ($row as $column_index => $value) {
+                if (is_array($value)) {
+                    $value = implode("\n", $value);
+                }
+                $this->sheet->setCellValueByColumnAndRow($column_index + 1, $row_index, $value);
+                $this->sheet->getStyleByColumnAndRow($column_index + 1, $row_index)->getAlignment()->setWrapText(true);
+            }
+            $row_index++;
+        }
+    }
+
+    /**
+     * @return string
+     */
     public function getBytes()
     {
         ob_start();
@@ -82,6 +160,10 @@ class Excel
         return ob_get_clean();
     }
 
+    /**
+     * @param boolean $assoc
+     * @return array
+     */
     public function toArray($assoc = true)
     {
         $array = [];
@@ -112,13 +194,5 @@ class Excel
         }
 
         return $array;
-    }
-
-    private function writeColumns($columns) {
-        foreach ($columns as $col_index => $column) {
-            $this->sheet->setCellValueByColumnAndRow($col_index + 1, 1, $column);
-            $this->sheet->getStyleByColumnAndRow($col_index + 1, 1)->getFont()->setBold(true);
-            $this->sheet->getColumnDimensionByColumn($col_index + 1)->setWidth(25);
-        }
     }
 }
