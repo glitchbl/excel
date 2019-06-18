@@ -161,10 +161,31 @@ class Excel
     }
 
     /**
+     * @return array
+     */
+    public function toArray()
+    {
+        $array = [];
+
+        foreach ($this->sheet->getRowIterator() as $row) {
+            $cells = $row->getCellIterator();
+            $cells->setIterateOnlyExistingCells(false);
+
+            $tmp = [];
+            foreach ($cells as $cell) {
+                $tmp[] = $cell->getFormattedValue();
+            }
+            $array[] = $tmp;
+        }
+
+        return $array;
+    }
+
+    /**
      * @param boolean $assoc
      * @return array
      */
-    public function toArray($assoc = true)
+    public function toAssocArray($assoc = true)
     {
         $array = [];
         $columns = [];

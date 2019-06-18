@@ -28,3 +28,5 @@ $excel = Excel::create(['1ère colonne', '2ème colonne', '3ème colonne'], [
 $file = "{$dir}/create.xlsx";
 
 $excel->save($file);
+
+var_dump($excel->toArray());
