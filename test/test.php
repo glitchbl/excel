@@ -11,8 +11,8 @@ if (!is_dir($dir))
 $file = "{$dir}/save.xlsx";
 
 $excel = new Excel;
-$excel->add(['test' => 123, 'Kappa' => 'Keppo']);
-$excel->add(['Choco' => 'Pistache', 'test' => 456]);
+$excel->addRow(['test' => 123, 'Kappa' => 'Keppo']);
+$excel->addRow(['Choco' => 'Pistache', 'test' => 456]);
 $excel->save($file);
 
 $file = "{$dir}/bytes.xlsx";
@@ -29,4 +29,41 @@ $file = "{$dir}/create.xlsx";
 
 $excel->save($file);
 
+var_dump($excel->toArray());
+
+$excel = Excel::create([
+    [
+        '1ère colonne' => '1x1',
+        '2ème colonne' => '1x2',
+        '3ème colonne' => '1x3',
+    ],
+    [
+        '1ère colonne' => '2x1',
+        '2ème colonne' => '2x2',
+        '3ème colonne' => '2x3',
+    ],
+    [
+        '1ère colonne' => '3x1',
+        '2ème colonne' => '3x2',
+        '3ème colonne' => '3x3',
+    ],
+]);
+
+$file = "{$dir}/create2.xlsx";
+
+$excel->save($file);
+
+var_dump($excel->toAssocArray());
+
+$excel = new Excel("{$dir}/test.xlsx");
+var_dump($excel->toArray());
+
+$excel = new Excel;
+$excel->addRows([
+    [1, 2, 3],
+], false);
+$excel->addRow([4, 5, 6], false);
+$excel->addRows([
+    [7, 8, 9],
+], false);
 var_dump($excel->toArray());

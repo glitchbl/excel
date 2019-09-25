@@ -12,17 +12,17 @@ class Excel
     /**
      * @var \PhpOffice\PhpSpreadsheet\Spreadsheet
      */
-    private $spreadsheet;
+    protected $spreadsheet;
 
     /**
      * @var \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet
      */
-    private $sheet;
+    protected $sheet;
 
     /**
      * @var string
      */
-    private $file;
+    protected $file;
 
     /**
      * @param string|null $file
@@ -36,14 +36,18 @@ class Excel
 
     /**
      * @param array $columns
-     * @param array $rows
+     * @param array|null $rows
      * @return \Glitchbl\Excel
      */
-    static public function create($columns, $rows)
+    static public function create($columns, $rows = null)
     {
-        $excel = new self;
-        $excel->writeColumns($columns);
-        $excel->addRows($rows);
+        $excel = new static;
+        if (!is_null($rows)) {
+            $excel->writeColumns($columns);
+            $excel->addRows($rows, false);
+        } else {
+            $excel->addRows($columns);
+        }
         return $excel;
     }
 
@@ -51,7 +55,7 @@ class Excel
      * @param array $columns
      * @return void
      */
-    private function writeColumns($columns) {
+    protected function writeColumns($columns) {
         foreach ($columns as $col_index => $column) {
             $this->sheet->setCellValueByColumnAndRow($col_index + 1, 1, $column);
             $this->sheet->getStyleByColumnAndRow($col_index + 1, 1)->getFont()->setBold(true);
@@ -63,9 +67,9 @@ class Excel
      * @return void
      */
     protected function make() {
-        if ($this->file) {
+        if (!is_null($this->file)) {
             if (!is_file($this->file)) {
-                throw new Exception("Le fichier {$this->file} n'existe pas");
+                throw new Exception("File {$this->file} does not exist");
             }
             $this->spreadsheet = IOFactory::load($this->file);
         } else {
@@ -81,50 +85,69 @@ class Excel
     public function save($file = null)
     {
         $writer = new Xlsx($this->spreadsheet);
-        if ($file) {
+        if (!is_null($file)) {
             $writer->save($file);   
-        } elseif ($this->file) {
+        } elseif (!is_null($this->file)) {
             $writer->save($this->file);
         } else {
-            throw new Exception('Veuillez spécifier un nom de fichier');
+            throw new Exception('Please specify a filename');
         }
     }
 
     /**
-     * @param array $row
+     * @param array $rows
      * @return void
      */
-    public function add(array $row)
+    public function addRow(array $row, $assoc = true)
     {
-        $columns = [];
+        $highest_row = $this->sheet->getHighestRow();
+        if ($assoc == false) {
+            $row_index = $highest_row + 1;
 
-        if ($this->sheet->getHighestRow() === 1) {
-            $columns = array_keys($row);
-            $this->writeColumns($columns);
-        } else {
-            $first_row = $this->sheet->getRowIterator()->current();
-            foreach ($first_row->getCellIterator() as $cell) {
-                $columns[] = $cell->getValue();
+            if ($row_index == 2) {
+                $tmp = $this->toArray();
+                if (count($tmp) == 1 && count($tmp[0]) == 1 && $tmp[0][0] == '')
+                    $row_index = 1;
             }
-        }
 
-        $new_columns = array_diff(array_keys($row), $columns);
-
-        if (count($new_columns)) {
-            $columns = array_merge($columns, $new_columns);
-            $this->writeColumns($columns);
-        }
-
-        $row_index = $this->sheet->getHighestRow() + 1;
-
-        foreach ($row as $column => $value) {
-            if (is_array($value)) {
-                $value = implode("\n", $value);
-            }
-            $column_index = array_search($column, $columns);
-            if ($column_index !== false) {
+            foreach ($row as $column_index => $value) {
+                if (is_array($value)) {
+                    $value = implode("\n", $value);
+                }
                 $this->sheet->setCellValueByColumnAndRow($column_index + 1, $row_index, $value);
                 $this->sheet->getStyleByColumnAndRow($column_index + 1, $row_index)->getAlignment()->setWrapText(true);
+            }
+        } else {
+            $columns = [];
+
+            if ($highest_row === 1) {
+                $columns = array_keys($row);
+                $this->writeColumns($columns);
+            } else {
+                $first_row = $this->sheet->getRowIterator()->current();
+                foreach ($first_row->getCellIterator() as $cell) {
+                    $columns[] = $cell->getValue();
+                }
+            }
+
+            $new_columns = array_diff(array_keys($row), $columns);
+
+            if (count($new_columns)) {
+                $columns = array_merge($columns, $new_columns);
+                $this->writeColumns($columns);
+            }
+
+            $row_index = $highest_row + 1;
+
+            foreach ($row as $column => $value) {
+                if (is_array($value)) {
+                    $value = implode("\n", $value);
+                }
+                $column_index = array_search($column, $columns);
+                if ($column_index !== false) {
+                    $this->sheet->setCellValueByColumnAndRow($column_index + 1, $row_index, $value);
+                    $this->sheet->getStyleByColumnAndRow($column_index + 1, $row_index)->getAlignment()->setWrapText(true);
+                }
             }
         }
     }
@@ -133,19 +156,10 @@ class Excel
      * @param array $rows
      * @return void
      */
-    public function addRows(array $rows)
+    public function addRows(array $rows, $assoc = true)
     {
-        $row_index = $this->sheet->getHighestRow() + 1;
-
         foreach ($rows as $row) {
-            foreach ($row as $column_index => $value) {
-                if (is_array($value)) {
-                    $value = implode("\n", $value);
-                }
-                $this->sheet->setCellValueByColumnAndRow($column_index + 1, $row_index, $value);
-                $this->sheet->getStyleByColumnAndRow($column_index + 1, $row_index)->getAlignment()->setWrapText(true);
-            }
-            $row_index++;
+            $this->addRow($row, $assoc);
         }
     }
 
