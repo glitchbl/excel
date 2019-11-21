@@ -15,9 +15,9 @@ $excel->addRow(['test' => 123, 'Kappa' => 'Keppo']);
 $excel->addRow(['Choco' => 'Pistache', 'test' => 456]);
 $excel->save($file);
 
-$file = "{$dir}/bytes.xlsx";
+$file = "{$dir}/bytes.csv";
 
-file_put_contents($file, $excel->getBytes());
+file_put_contents($file, $excel->getBytes('csv'));
 
 $excel = Excel::create(['1ère colonne', '2ème colonne', '3ème colonne'], [
     ['1x1', '1x2', '1x3'],
@@ -49,9 +49,9 @@ $excel = Excel::create([
     ],
 ]);
 
-$file = "{$dir}/create2.xlsx";
+$file = "{$dir}/create2.csv";
 
-$excel->save($file);
+$excel->save($file, 'csv');
 
 var_dump($excel->toAssocArray());
 

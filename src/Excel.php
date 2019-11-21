@@ -6,6 +6,7 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Exception;
+use PhpOffice\PhpSpreadsheet\Writer\Csv;
 
 class Excel
 {
@@ -82,9 +83,17 @@ class Excel
      * @param string|null $file
      * @return void
      */
-    public function save($file = null)
+    public function save($file = null, $type = 'xlsx', $delimiter = ',')
     {
-        $writer = new Xlsx($this->spreadsheet);
+        if ($type == 'xlsx')
+            $writer = new Xlsx($this->spreadsheet);
+        elseif ($type == 'csv') {
+            $writer = new Csv($this->spreadsheet);
+            $writer->setDelimiter($delimiter);
+        } else {
+            throw new Exception("Type: [xlsx,csv]");
+        }
+
         if (!is_null($file)) {
             $writer->save($file);   
         } elseif (!is_null($this->file)) {
@@ -166,10 +175,17 @@ class Excel
     /**
      * @return string
      */
-    public function getBytes()
+    public function getBytes($type = 'xlsx', $delimiter = ',')
     {
         ob_start();
-        $writer = new Xlsx($this->spreadsheet);
+        if ($type == 'xlsx')
+            $writer = new Xlsx($this->spreadsheet);
+        elseif ($type == 'csv') {
+            $writer = new Csv($this->spreadsheet);
+            $writer->setDelimiter($delimiter);
+        } else {
+            throw new Exception("Type: [xlsx,csv]");
+        }
         $writer->save('php://output');
         return ob_get_clean();
     }
