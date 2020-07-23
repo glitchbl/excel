@@ -22,6 +22,6 @@ class Cell {
 
     public function sanitize(Closure $closure)
     {
-        return $closure->call(null, $this->value);
+        return $closure->call($this, $this->value);
     }
 }
