@@ -2,7 +2,7 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Glitchbl\Excel;
+use Glitchbl\Excel\Excel;
 
 $dir = __DIR__ . '/tests';
 if (!is_dir($dir))

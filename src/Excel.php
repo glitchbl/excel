@@ -1,12 +1,12 @@
 <?php
 
-namespace Glitchbl;
+namespace Glitchbl\Excel;
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Writer\Csv;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Exception;
-use PhpOffice\PhpSpreadsheet\Writer\Csv;
 
 class Excel
 {
@@ -203,7 +203,7 @@ class Excel
 
             $tmp = [];
             foreach ($cells as $cell) {
-                $tmp[] = $cell->getFormattedValue();
+                $tmp[] = new Cell($cell);
             }
             $array[] = $tmp;
         }
@@ -231,11 +231,11 @@ class Excel
                     $columns[$cell_index] = $cell->getValue();
                 } else {
                     if ($assoc) {
-                        $tmp[$columns[$cell_index]] = $cell->getFormattedValue();
+                        $tmp[$columns[$cell_index]] = new Cell($cell);
                     } else {
                         $tmp[$i++] = [
                             $columns[$cell_index],
-                            $cell->getFormattedValue()
+                            new Cell($cell)
                         ];
                     }
                 }
