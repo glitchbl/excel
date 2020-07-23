@@ -20,8 +20,17 @@ class Cell {
         return $this->formattedValue;
     }
 
-    public function sanitize(Closure $closure)
+    public function getValue(?Closure $closure = null)
     {
-        return $closure->call($this, $this->value);
+        if (!is_null($closure))
+            return $closure->call($this, $this->value);
+        return $this->value;
+    }
+
+    public function getFormattedValue(?Closure $closure = null)
+    {
+        if (!is_null($closure))
+            return $closure->call($this, $this->formattedValue);
+        return $this->formattedValue;
     }
 }

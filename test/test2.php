@@ -12,4 +12,4 @@ $excel = Excel::create(['1ère colonne', '2ème colonne', '3ème colonne'], [
 
 $a = $excel->toArray()[0][0];
 
-echo $a->sanitize(fn($v) => trim(str_replace('colonne', '', $v)));
+echo $a->getValue(fn($v) => trim(str_replace('colonne', '', $v)));
