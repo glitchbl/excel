@@ -2,6 +2,8 @@
 
 namespace Glitchbl\Excel;
 
+use PhpOffice\PhpSpreadsheet\Cell\Cell as PhpSpreadsheetCell;
+use ReflectionFunction;
 use Closure;
 
 class Cell {
@@ -9,7 +11,7 @@ class Cell {
 
     protected $formattedValue;
 
-    public function __construct(\PhpOffice\PhpSpreadsheet\Cell\Cell $cell)
+    public function __construct(PhpSpreadsheetCell $cell)
     {
         $this->value = $cell->getValue();
         $this->formattedValue = $cell->getFormattedValue();
@@ -20,17 +22,23 @@ class Cell {
         return $this->formattedValue;
     }
 
+    protected function getValueWithClosure($value, Closure $closure)
+    {
+        $reflector = new ReflectionFunction($closure);
+        return $closure->call($reflector->getClosureThis(), $value);
+    }
+
     public function getValue(?Closure $closure = null)
     {
         if (!is_null($closure))
-            return $closure->call($this, $this->value);
+            return $this->getValueWithClosure($this->value, $closure);
         return $this->value;
     }
 
     public function getFormattedValue(?Closure $closure = null)
     {
         if (!is_null($closure))
-            return $closure->call($this, $this->formattedValue);
+            return $this->getValueWithClosure($this->formattedValue, $closure);
         return $this->formattedValue;
     }
 }
