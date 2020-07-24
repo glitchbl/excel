@@ -36,6 +36,14 @@ class Cell {
     }
 
     /**
+     * @return bool
+     */
+    public function isEmpty()
+    {
+        return is_null($this->value) || $this->value === '';
+    }
+
+    /**
      * @param mixed $value
      * @param \Closure $closure
      * @return mixed
