@@ -95,7 +95,8 @@ class Excel
         }
 
         if (!is_null($file)) {
-            $writer->save($file);   
+            $writer->save($file);
+            $this->file = $file;
         } elseif (!is_null($this->file)) {
             $writer->save($this->file);
         } else {
