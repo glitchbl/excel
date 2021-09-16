@@ -51,7 +51,7 @@ class Cell {
     protected function getValueWithClosure($value, Closure $closure)
     {
         $reflector = new ReflectionFunction($closure);
-        return $closure->call($reflector->getClosureThis(), $value);
+        return $closure->call($reflector->getClosureThis() ?? $this, $value);
     }
 
     /**

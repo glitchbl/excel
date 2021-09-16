@@ -2,13 +2,13 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Glitchbl\Excel\Excel;
+use Glitchbl\Excel;
 
 $dir = __DIR__ . '/tests';
 if (!is_dir($dir))
     mkdir($dir);
 
-$file = "{$dir}/save.xlsx";
+$file = "{$dir}/test.xlsx";
 
 $excel = new Excel;
 $excel->addRow(['test' => 123, 'Kappa' => 'Keppo']);
