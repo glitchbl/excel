@@ -58,6 +58,25 @@ class Sheet
     }
 
     /**
+     * @param \Glitchbl\Excel\Cell $cell
+     * @return \Glitchbl\Excel\Cell|string
+     */
+    protected function getValue(Cell $cell)
+    {
+        switch ($this->mode) {
+            case static::RAW:
+                return $cell->getValue();
+                break;
+            case static::FORMATED:
+                return $cell->getFormattedValue();
+                break;
+            default:
+                return $cell;
+                break;
+        }
+    }
+
+    /**
      * @return array
      */
     public function toArray()
@@ -70,7 +89,7 @@ class Sheet
 
             $tmp = [];
             foreach ($cells as $cell) {
-                $tmp[] = new Cell($cell);
+                $tmp[] = $this->getValue(new Cell($cell));
             }
             $array[] = $tmp;
         }
@@ -97,12 +116,13 @@ class Sheet
                 if ($row_index == 1) {
                     $columns[$cell_index] = $cell->getValue();
                 } else {
+                    $value = $this->getValue(new Cell($cell));;
                     if ($assoc) {
-                        $tmp[$columns[$cell_index]] = new Cell($cell);
+                        $tmp[$columns[$cell_index]] = $value;
                     } else {
                         $tmp[$i++] = [
                             $columns[$cell_index],
-                            new Cell($cell)
+                            $value
                         ];
                     }
                 }
